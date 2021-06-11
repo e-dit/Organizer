@@ -59,6 +59,16 @@ function renderTask(taskId, title, description, status) {
   ul.className = 'list-group list-group-flush';
   section.appendChild(ul);
 
+  apiListOperationsForTask(taskId).then(
+    function(response) {
+      response.data.forEach(
+        function(operation) {
+          renderOperation(ul, status, operation.id, operation.description, operation.timeSpent);
+        }
+      );
+    }
+  );
+
   //
 
   if(status == 'open') {
@@ -104,3 +114,63 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   );
 });
+
+function apiListOperationsForTask(taskId) {
+  return fetch(
+    apihost + '/api/tasks/' + taskId + '/operations',
+    { headers: { 'Authorization': apikey } }
+  ).then(
+    function (resp) {
+      if(!resp.ok) {
+        alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+      }
+      return resp.json();
+    }
+  );
+}
+
+function renderOperation(ul, status, operationId, operationDescription, timeSpent) {
+  const li = document.createElement('li');
+  li.className = 'list-group-item d-flex justify-content-between align-items-center';
+  ul.appendChild(li);
+
+  const descriptionDiv = document.createElement('div');
+  descriptionDiv.innerText = operationDescription;
+  li.appendChild(descriptionDiv);
+
+  const time = document.createElement('span');
+  time.className = 'badge badge-success badge-pill ml-2';
+  time.innerText = formatTime(timeSpent);
+  descriptionDiv.appendChild(time);
+
+  if(status == "open") {
+    const controlDiv = document.createElement('div');
+    controlDiv.className = 'js-task-open-only';
+    li.appendChild(controlDiv);
+
+    const add15minButton = document.createElement('button');
+    add15minButton.className = 'btn btn-outline-success btn-sm mr-2';
+    add15minButton.innerText = '+15m';
+    controlDiv.appendChild(add15minButton);
+
+    const add1hButton = document.createElement('button');
+    add1hButton.className = 'btn btn-outline-success btn-sm mr-2';
+    add1hButton.innerText = '+1h';
+    controlDiv.appendChild(add1hButton);
+
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'btn btn-outline-danger btn-sm';
+    deleteButton.innerText = 'Delete';
+    controlDiv.appendChild(deleteButton);
+  }
+}
+
+function formatTime(timeSpent) {
+  const hours = Math.floor(timeSpent / 60);
+  const minutes = timeSpent % 60;
+  if(hours > 0) {
+    return hours + 'h ' + minutes + 'm';
+  } else {
+    return minutes + 'm';
+  }
+}
