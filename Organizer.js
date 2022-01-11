@@ -174,3 +174,72 @@ function formatTime(timeSpent) {
     return minutes + 'm';
   }
 }
+
+function renderTask(taskId, title, description, status) {
+
+  // ...
+
+
+  const ul = document.createElement('ul');
+
+  ul.className = 'list-group list-group-flush';
+
+  section.appendChild(ul);
+
+
+  apiListOperationsForTask(taskId).then(
+
+    function(response) {
+
+      response.data.forEach(
+
+        function(operation) {
+
+          renderOperation(ul, status, operation.id, operation.description, operation.timeSpent);
+
+        }
+
+      );
+
+    }
+
+  );
+
+
+  // ...
+
+}
+
+function apiCreateTask(title, description) {
+
+  return fetch(
+
+    apihost + '/api/tasks',
+
+    {
+
+      headers: { Authorization: apikey, 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ title: title, description: description, status: 'open' }),
+
+      method: 'POST'
+
+    }
+
+  ).then(
+
+    function (resp) {
+
+      if(!resp.ok) {
+
+        alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+
+      }
+
+      return resp.json();
+
+    }
+
+  );
+
+}
