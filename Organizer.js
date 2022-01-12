@@ -5,16 +5,34 @@ function apiListTasks() {
   return fetch(
     apihost + '/api/tasks',
     {
-      headers: { Authorization: apikey }
+      headers: { 'Authorization': apikey }
     }
   ).then(
     function (resp) {
       if(!resp.ok) {
-        alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+        alert('Błąd! Otwórz devtools oraz zakładkę Network i poszukaj przyczyny');
       }
       return resp.json();
     }
-  )
+  );
+}
+
+function apiCreateTask(title, description) {
+  return fetch(
+    apihost + '/api/tasks',
+    {
+      headers: { Authorization: apikey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title, description: description, status: 'open' }),
+      method: 'POST'
+    }
+  ).then(
+    function (resp) {
+      if(!resp.ok) {
+        alert('Błąd! Otwórz devtools oraz zakładkę Network i poszukaj przyczyny');
+      }
+      return resp.json();
+    }
+  );
 }
 
 function renderTask(taskId, title, description, status) {
@@ -41,7 +59,7 @@ function renderTask(taskId, title, description, status) {
   const headerRightDiv = document.createElement('div');
   headerDiv.appendChild(headerRightDiv);
 
-  if(status == 'open') {
+  if (status == 'open') {
     const finishButton = document.createElement('button');
     finishButton.className = 'btn btn-dark btn-sm js-task-open-only';
     finishButton.innerText = 'Finish';
@@ -53,11 +71,10 @@ function renderTask(taskId, title, description, status) {
   deleteButton.innerText = 'Delete';
   headerRightDiv.appendChild(deleteButton);
 
-  //
-
   const ul = document.createElement('ul');
   ul.className = 'list-group list-group-flush';
   section.appendChild(ul);
+
 
   apiListOperationsForTask(taskId).then(
     function(response) {
@@ -65,11 +82,9 @@ function renderTask(taskId, title, description, status) {
         function(operation) {
           renderOperation(ul, status, operation.id, operation.description, operation.timeSpent);
         }
-      );
+      )
     }
-  );
-
-  //
+  )
 
   if(status == 'open') {
     const addOperationDiv = document.createElement('div');
@@ -99,147 +114,49 @@ function renderTask(taskId, title, description, status) {
     addButton.innerText = 'Add';
     inputGroupAppend.appendChild(addButton);
 
-    //
-  }
-}
+    function renderOperation(ul, status, operationId, operationDescription, timeSpent) {
+      const li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between align-items-center';
+      ul.appendChild(li);
 
-document.addEventListener('DOMContentLoaded', function() {
-  apiListAllTasks().then(
-    function(response) {
-      response.data.forEach(
-        function(task) {
-          renderTask(task.id, task.title, task.description, task.status);
-        }
-      )
-    }
-  );
-});
+      const descriptionDiv = document.createElement('div');
+      descriptionDiv.innerText = operationDescription;
+      li.appendChild(descriptionDiv);
 
-function apiListOperationsForTask(taskId) {
-  return fetch(
-    apihost + '/api/tasks/' + taskId + '/operations',
-    { headers: { 'Authorization': apikey } }
-  ).then(
-    function (resp) {
-      if(!resp.ok) {
-        alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+      const time = document.createElement('span');
+      time.className = 'badge badge-success badge-pill ml-2';
+      time.innerText = formatTime(timeSpent);
+      descriptionDiv.appendChild(time);
+
+      if (status == "open") {
+        const controlDiv = document.createElement('div');
+        controlDiv.className = 'js-task-open-only';
+        li.appendChild(controlDiv);
+
+        const add15minButton = document.createElement('button');
+        add15minButton.className = 'btn btn-outline-success btn-sm mr-2';
+        add15minButton.innerText = '+15m';
+        controlDiv.appendChild(add15minButton);
+
+        const add1hButton = document.createElement('button');
+        add1hButton.className = 'btn btn-outline-success btn-sm mr-2';
+        add1hButton.innerText = '+1h';
+        controlDiv.appendChild(add1hButton);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-outline-danger btn-sm';
+        deleteButton.innerText = 'Delete';
+        controlDiv.appendChild(deleteButton);
       }
-      return resp.json();
-    }
-  );
-}
-
-function renderOperation(ul, status, operationId, operationDescription, timeSpent) {
-  const li = document.createElement('li');
-  li.className = 'list-group-item d-flex justify-content-between align-items-center';
-  ul.appendChild(li);
-
-  const descriptionDiv = document.createElement('div');
-  descriptionDiv.innerText = operationDescription;
-  li.appendChild(descriptionDiv);
-
-  const time = document.createElement('span');
-  time.className = 'badge badge-success badge-pill ml-2';
-  time.innerText = formatTime(timeSpent);
-  descriptionDiv.appendChild(time);
-
-  if(status == "open") {
-    const controlDiv = document.createElement('div');
-    controlDiv.className = 'js-task-open-only';
-    li.appendChild(controlDiv);
-
-    const add15minButton = document.createElement('button');
-    add15minButton.className = 'btn btn-outline-success btn-sm mr-2';
-    add15minButton.innerText = '+15m';
-    controlDiv.appendChild(add15minButton);
-
-    const add1hButton = document.createElement('button');
-    add1hButton.className = 'btn btn-outline-success btn-sm mr-2';
-    add1hButton.innerText = '+1h';
-    controlDiv.appendChild(add1hButton);
-
-    const deleteButton = document.createElement('button');
-    deleteButton.className = 'btn btn-outline-danger btn-sm';
-    deleteButton.innerText = 'Delete';
-    controlDiv.appendChild(deleteButton);
-  }
-}
-
-function formatTime(timeSpent) {
-  const hours = Math.floor(timeSpent / 60);
-  const minutes = timeSpent % 60;
-  if(hours > 0) {
-    return hours + 'h ' + minutes + 'm';
-  } else {
-    return minutes + 'm';
-  }
-}
-
-function renderTask(taskId, title, description, status) {
-
-  // ...
-
-
-  const ul = document.createElement('ul');
-
-  ul.className = 'list-group list-group-flush';
-
-  section.appendChild(ul);
-
-
-  apiListOperationsForTask(taskId).then(
-
-    function(response) {
-
-      response.data.forEach(
-
-        function(operation) {
-
-          renderOperation(ul, status, operation.id, operation.description, operation.timeSpent);
-
-        }
-
-      );
-
     }
 
-  );
-
-
-  // ...
-
-}
-
-function apiCreateTask(title, description) {
-
-  return fetch(
-
-    apihost + '/api/tasks',
-
-    {
-
-      headers: { Authorization: apikey, 'Content-Type': 'application/json' },
-
-      body: JSON.stringify({ title: title, description: description, status: 'open' }),
-
-      method: 'POST'
-
-    }
-
-  ).then(
-
-    function (resp) {
-
-      if(!resp.ok) {
-
-        alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
-
+    function formatTime(timeSpent) {
+      const hours = Math.floor(timeSpent / 60);
+      const minutes = timeSpent % 60;
+      if (hours > 0) {
+        return hours + 'h ' + minutes + 'm';
+      } else {
+        return minutes + 'm';
       }
-
-      return resp.json();
-
     }
-
-  );
-
-}
+//
