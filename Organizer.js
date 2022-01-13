@@ -35,6 +35,41 @@ function apiCreateTask(title, description) {
   );
 }
 
+function apiUpdateTask(taskId, title, description, status) {
+  return fetch(
+    apihost + '/api/tasks/' + taskId,
+    {
+      headers: { Authorization: apikey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title, description: description, status: status }),
+      method: 'PUT'
+    }
+  ).then(
+    function (resp) {
+      if(!resp.ok) {
+        alert('Błąd! Otwórz devtools oraz zakładkę Network i poszukaj przyczyny');
+      }
+      return resp.json();
+    }
+  );
+}
+
+function apiDeleteTask(taskId) {
+  return fetch(
+    apihost + '/api/tasks/' + taskId,
+    {
+      headers: { Authorization: apikey },
+      method: 'DELETE'
+    }
+  ).then(
+    function (resp) {
+      if(!resp.ok) {
+        alert('Błąd! Otwórz devtools oraz zakładkę Network i poszukaj przyczyny');
+      }
+      return resp.json();
+    }
+  )
+}
+
 function renderTask(taskId, title, description, status) {
   const section = document.createElement('section');
   section.className = 'card mt-5 shadow-sm';
@@ -64,17 +99,25 @@ function renderTask(taskId, title, description, status) {
     finishButton.className = 'btn btn-dark btn-sm js-task-open-only';
     finishButton.innerText = 'Finish';
     headerRightDiv.appendChild(finishButton);
+    finishButton.addEventListener('click', function() {
+      apiUpdateTask(taskId, title, description, 'closed');
+      section.querySelectorAll('.js-task-open-only').forEach(
+        function(element) { element.parentElement.removeChild(element); }
+      );
+    });
   }
 
   const deleteButton = document.createElement('button');
   deleteButton.className = 'btn btn-outline-danger btn-sm ml-2';
   deleteButton.innerText = 'Delete';
   headerRightDiv.appendChild(deleteButton);
+  deleteButton.addEventListener('click', function() {
+    apiDeleteTask(taskId).then(function() { section.parentElement.removeChild(section); });
+  });
 
   const ul = document.createElement('ul');
   ul.className = 'list-group list-group-flush';
   section.appendChild(ul);
-
 
   apiListOperationsForTask(taskId).then(
     function(response) {
