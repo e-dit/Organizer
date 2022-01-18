@@ -219,6 +219,23 @@ function renderTask(taskId, title, description, status) {
     addButton.innerText = 'Add';
     inputGroupAppend.appendChild(addButton);
 
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      apiCreateOperationForTask(taskId, descriptionInput.value).then(
+        function(response) {
+          renderOperation(
+            ul,
+            status,
+            response.data.id,
+            response.data.description,
+            response.data.timeSpent
+          );
+        }
+      )
+    });
+  }
+}
+
     function renderOperation(ul, status, operationId, operationDescription, timeSpent) {
       const li = document.createElement('li');
       li.className = 'list-group-item d-flex justify-content-between align-items-center';
@@ -243,10 +260,28 @@ function renderTask(taskId, title, description, status) {
         add15minButton.innerText = '+15m';
         controlDiv.appendChild(add15minButton);
 
+        add15minButton.addEventListener('click', function() {
+        apiUpdateOperation(operationId, operationDescription, timeSpent + 15).then(
+        function(response) {
+          time.innerText = formatTime(response.data.timeSpent);
+          timeSpent = response.data.timeSpent;
+        }
+      );
+    });
+
         const add1hButton = document.createElement('button');
         add1hButton.className = 'btn btn-outline-success btn-sm mr-2';
         add1hButton.innerText = '+1h';
         controlDiv.appendChild(add1hButton);
+
+        add1hButton.addEventListener('click', function() {
+        apiUpdateOperation(operationId, operationDescription, timeSpent + 60).then(
+        function(response) {
+          time.innerText = formatTime(response.data.timeSpent);
+          timeSpent = response.data.timeSpent;
+        }
+      );
+    });
 
         const deleteButton = document.createElement('button');
         deleteButton.className = 'btn btn-outline-danger btn-sm';
@@ -254,6 +289,12 @@ function renderTask(taskId, title, description, status) {
         controlDiv.appendChild(deleteButton);
       }
     }
+
+        deleteButton.addEventListener('click', function() {
+        apiDeleteOperation(operationId).then(
+        function() { li.parentElement.removeChild(li); }
+      );
+    });
 
     function formatTime(timeSpent) {
       const hours = Math.floor(timeSpent / 60);
@@ -263,4 +304,4 @@ function renderTask(taskId, title, description, status) {
       } else {
         return minutes + 'm';
       }
-    }}}
+    }
