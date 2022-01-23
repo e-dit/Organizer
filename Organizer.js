@@ -1,7 +1,7 @@
 const apikey = 'cd902140-5ef4-4aee-a6a2-d0dac13393ab';
 const apihost = 'https://todo-api.coderslab.pl';
 
-function apiListTasks() {
+function apiListAllTasks() {
   return fetch(
     apihost + '/api/tasks',
     {
@@ -296,12 +296,31 @@ function renderTask(taskId, title, description, status) {
       );
     });
 
-    function formatTime(timeSpent) {
-      const hours = Math.floor(timeSpent / 60);
-      const minutes = timeSpent % 60;
+    function formatTime(total) {
+      const hours = Math.floor(total / 60);
+      const minutes = total % 60;
       if (hours > 0) {
         return hours + 'h ' + minutes + 'm';
       } else {
         return minutes + 'm';
       }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        apiListAllTasks().then(
+            function(response) {
+                response.data.forEach(
+                    function(task) {
+                        renderTask(task.id, task.title, task.description, task.status);
+                    }
+                )
+            }
+        );
+        document.querySelector('.js-task-adding-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            apiCreateTask(event.target.elements.title.value, event.target.elements.description.value).then(
+                function(response) { renderTask(response.data.id, response.data.title, response.data.description,
+                    response.data.status) }
+    )
+  });
+});
