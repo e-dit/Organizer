@@ -1,12 +1,12 @@
 const apikey = 'cd902140-5ef4-4aee-a6a2-d0dac13393ab';
+/*'8ec9184d-8325-4d09-80e6-2d07d0e8be68'*/
 const apihost = 'https://todo-api.coderslab.pl';
 
 function apiListAllTasks() {
   return fetch(
     apihost + '/api/tasks',
     {
-      headers: { 'Authorization': apikey }
-    }
+      headers: { 'Authorization': apikey }}
   ).then(
     function (resp) {
       if(!resp.ok) {
